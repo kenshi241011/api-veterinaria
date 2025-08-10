@@ -80,6 +80,31 @@ app.get('/api/propietarios', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+// --- ENDPOINT NUEVO PARA MODIFICAR UN PROPIETARIO POR SU ID ---
+app.put('/api/propietarios/:id', async (req, res) => {
+    const { id } = req.params;
+    // Obtenemos los nuevos datos desde el cuerpo de la petición
+    const { nombre, apellido, email } = req.body;
+
+    try {
+        // Creamos la consulta SQL para actualizar los datos de forma segura
+        const query = 'UPDATE "Propietarios" SET nombre = $1, apellido = $2, email = $3 WHERE propietario_id = $4 RETURNING *';
+        const values = [nombre, apellido, email, id];
+
+        // Ejecutamos la consulta
+        const result = await pool.query(query, values);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Propietario no encontrado' });
+        }
+
+        // Devolvemos el propietario con sus datos actualizados
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
 
 app.listen(port, () => {
     console.log(`API de la veterinaria escuchando en el puerto ${port}`);
