@@ -10,10 +10,10 @@ const port = process.env.PORT || 3000;
 // Reemplaza los datos con los que copiaste de Supabase
 const pool = new Pool({
   user: 'postgres',
-  host: 'db.lgbwztsxapodtzlpfmhe.supabase.co',
+  host: 'aws-0-us-east-2.pooler.supabase.com',
   database: 'postgres',
   password: 'Video123', // La que guardaste al crear el proyecto
-  port: 5432,
+  port: 6543,
 });
 // La ruta de la API
 app.get('/api/mascotas', async (req, res) => {
