@@ -16,7 +16,17 @@ const pool = new Pool({
   password: 'Video123', 
   port: 6543,
 });
+function protegerRuta(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) return res.sendStatus(401);
 
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
 app.post('/api/historial/:id/resumir', protegerRuta, async (req, res) => {
     const { id } = req.params;
 
