@@ -121,25 +121,31 @@ app.get('/api/propietarios', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
-// --- ENDPOINT NUEVO PARA MODIFICAR UN PROPIETARIO POR SU ID ---
-app.put('/api/propietarios/:id', async (req, res) => {
+// --- ENDPOINT NUEVO PARA MODIFICAR
+// --- PUT: ACTUALIZAR UN PROPIETARIO EXISTENTE (VERSIÓN COMPLETA) ---
+app.put('/api/propietarios/:id', protegerRuta, async (req, res) => {
     const { id } = req.params;
-    // Obtenemos los nuevos datos desde el cuerpo de la petición
-    const { nombre, apellido, email } = req.body;
+    // Obtenemos TODOS los nuevos datos desde el cuerpo de la petición
+    const { nombre, apellido, email, telefono, direccion } = req.body;
 
     try {
-       
-        const query = 'UPDATE "Propietarios" SET nombre = $1, apellido = $2, email = $3 WHERE propietario_id = $4 RETURNING *';
-        const values = [nombre, apellido, email, id];
-
+        // Actualizamos la consulta SQL para incluir los nuevos campos
+        const query = `
+            UPDATE "Propietarios" 
+            SET nombre = $1, apellido = $2, email = $3, telefono = $4, direccion = $5 
+            WHERE propietario_id = $6 
+            RETURNING *
+        `;
+        const values = [nombre, apellido, email, telefono, direccion, id];
         
+        // Ejecutamos la consulta
         const result = await pool.query(query, values);
 
         if (result.rowCount === 0) {
             return res.status(404).json({ message: 'Propietario no encontrado' });
         }
-
         
+        // Devolvemos el propietario con sus datos actualizados
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
