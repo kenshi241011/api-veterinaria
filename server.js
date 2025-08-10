@@ -1,7 +1,8 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
-
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI("AIzaSyB1xjT_S_pPECCQZ50VDDb3vRbQBa_EHpk");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -16,7 +17,37 @@ const pool = new Pool({
   port: 6543,
 });
 
+app.post('/api/historial/:id/resumir', protegerRuta, async (req, res) => {
+    const { id } = req.params;
 
+    try {
+        // 1. Buscamos el historial médico en nuestra base de datos
+        const historialQuery = 'SELECT diagnostico, tratamiento, notas_seguimiento FROM "HistorialMedico" WHERE historial_id = $1';
+        const historialResult = await pool.query(historialQuery, [id]);
+
+        if (historialResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Historial médico no encontrado' });
+        }
+
+        const historial = historialResult.rows[0];
+        const textoCompleto = `Diagnóstico: ${historial.diagnostico}. Tratamiento: ${historial.tratamiento}. Notas: ${historial.notas_seguimiento}.`;
+
+        // 2. Le pedimos a la IA que lo resuma
+        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+        const prompt = `Actúa como un asistente veterinario amigable. Resume las siguientes notas médicas de una consulta para que el dueño de la mascota pueda entenderlas fácilmente. Usa un lenguaje claro, positivo y menciona los pasos a seguir. Las notas son: "${textoCompleto}"`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const resumen = response.text();
+
+        // 3. Devolvemos el resumen generado por la IA
+        res.json({ resumen });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error al generar el resumen con IA.");
+    }
+});
 app.get('/api/mascotas', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM "Mascotas"'); 
@@ -105,7 +136,37 @@ app.put('/api/propietarios/:id', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+app.get('/api/mascotas/:id', protegerRuta, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM "Mascotas" WHERE mascota_id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Mascota no encontrada' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
 
+// --- ENDPOINT PARA OBTENER EL HISTORIAL MÉDICO DE UNA MASCOTA ---
+app.get('/api/mascotas/:id/historial', protegerRuta, async (req, res) => {
+    const { id } = req.params; // Este es el ID de la mascota
+    try {
+        const query = `
+            SELECT hm.* FROM "HistorialMedico" hm
+            JOIN "Citas" c ON hm.cita_id = c.cita_id
+            WHERE c.mascota_id = $1
+            ORDER BY hm.historial_id DESC
+        `;
+        const result = await pool.query(query, [id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
 app.listen(port, () => {
     console.log(`API de la veterinaria escuchando en el puerto ${port}`);
 });
