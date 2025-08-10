@@ -70,7 +70,16 @@ app.delete('/api/propietarios/:id', async (req, res) => {
         res.status(500).send(err.message);
     }
 });
-
+// --- ENDPOINT PARA OBTENER TODOS LOS PROPIETARIOS ---
+app.get('/api/propietarios', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM "Propietarios" ORDER BY propietario_id DESC'); 
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send(err.message);
+    }
+});
 
 app.listen(port, () => {
     console.log(`API de la veterinaria escuchando en el puerto ${port}`);
