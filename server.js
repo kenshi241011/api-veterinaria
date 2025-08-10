@@ -1,20 +1,23 @@
 // Forzando el cambio para el deploy final
 const express = require('express');
-const { Pool } = require('pg'); // Asegúrate de que usa 'pg'
+const { Pool } = require('pg');
+const cors = require('cors'); // <-- LÍNEA 1: IMPORTAR CORS
 
 const app = express();
-// Render te dará un puerto, así que es mejor usar esta línea
 const port = process.env.PORT || 3000; 
+
+app.use(cors()); // <-- LÍNEA 2: USAR CORS
 
 // ¡CONFIGURACIÓN NUEVA!
 // Reemplaza los datos con los que copiaste de Supabase
 const pool = new Pool({
-  user: 'postgres.lgbwztsxapodtzlpfmhe',
+  user: 'postgres.lgbwtsxapodtzlpfmhe',
   host: 'aws-0-us-east-2.pooler.supabase.com',
   database: 'postgres',
   password: 'Video123', // La que guardaste al crear el proyecto
   port: 6543,
 });
+
 // La ruta de la API
 app.get('/api/mascotas', async (req, res) => {
     try {
