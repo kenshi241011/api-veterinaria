@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 // Reemplaza los datos con los que copiaste de Supabase
 const pool = new Pool({
   user: 'postgres',
-  host: 'db.lgbwtsxapodtzlpfmhe.supabase.co',
+  host: 'db.lgbwztsxapodtzlpfmhe.supabase.co',
   database: 'postgres',
   password: 'Video123', // La que guardaste al crear el proyecto
   port: 5432,
