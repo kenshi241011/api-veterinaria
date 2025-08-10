@@ -11,7 +11,7 @@ app.use(cors()); // <-- LÍNEA 2: USAR CORS
 // ¡CONFIGURACIÓN NUEVA!
 // Reemplaza los datos con los que copiaste de Supabase
 const pool = new Pool({
-  user: 'postgres.lgbwtsxapodtzlpfmhe',
+  user: 'postgres.lgbwztsxapodtzlpfmhe',
   host: 'aws-0-us-east-2.pooler.supabase.com',
   database: 'postgres',
   password: 'Video123', // La que guardaste al crear el proyecto
